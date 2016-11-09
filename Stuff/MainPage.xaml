@@ -8,12 +8,15 @@
     xmlns:media3D="using:Windows.UI.Xaml.Media.Media3D"
     mc:Ignorable="d">
 
-    <Grid x:Name="StarGrid" Background="Black" Width="800" Height="600">
+    <Grid x:Name="StarGrid" Background="Black" Width="800" Height="600" PointerReleased="Released">
         <Grid.Clip>
             <RectangleGeometry Rect="0, 0, 800, 600"></RectangleGeometry>
         </Grid.Clip>
         <Grid.Transform3D>
             <media3D:PerspectiveTransform3D></media3D:PerspectiveTransform3D>
         </Grid.Transform3D>
+        <StackPanel x:Name="CannonsPanel" Orientation="Horizontal" VerticalAlignment="Bottom">
+            <Image Source="Assets/xwing2.png" Width="180" Height="150" Stretch="Uniform"></Image>
+        </StackPanel>
     </Grid>
 </Page>

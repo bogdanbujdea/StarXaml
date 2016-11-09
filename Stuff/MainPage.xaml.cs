@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Media3D;
@@ -24,14 +27,62 @@ namespace Stuff
         Random random = new Random((int)DateTime.Now.Ticks);
         private void ViewLoaded(object sender, RoutedEventArgs e)
         {
+            StartStarsTimer();
+            StartGameTimer();
+            StartFireTimer();
+        }
+
+        private void StartFireTimer()
+        {
+            var fireTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            fireTimer.Tick += (o, args) => Fire();
+            fireTimer.Start();
+        }
+
+        private void StartGameTimer()
+        {
+            var gameTimer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(2)};
+            gameTimer.Tick += (o, args) => ChangeCannons();
+            gameTimer.Start();
+        }
+
+        private void StartStarsTimer()
+        {
             var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(10) };
             timer.Tick += (o, args) =>
             {
                 CreateStar();
                 CreateStar();
                 CreateStar();
+                
             };
             timer.Start();
+        }
+
+        private void ChangeCannons()
+        {
+            var x = GetLeftBorder();
+            CannonsPanel.Margin = new Thickness(x, 0, 0, 0);
+        }
+
+        private double GetLeftBorder()
+        {
+            var position = GetMousePosition();
+            Debug.WriteLine("X: " + position.X);
+            var space = Window.Current.CoreWindow.Bounds.Width - StarGrid.ActualWidth;
+            Debug.WriteLine("SPACE: " + space);
+            if (position.X < space / 2) 
+                return 0;
+            if (position.X > StarGrid.ActualWidth + space/2)
+                return 750;
+            return position.X - (space/2);
+        }
+
+        private Point GetMousePosition()
+        {
+            Rect bounds = Window.Current.CoreWindow.Bounds;
+            var point = Window.Current.CoreWindow.PointerPosition;
+            return new Point(point.X - bounds.X, point.Y - bounds.Y);
         }
 
         bool Inside(double x, double y, double radius, double centerX = 0, double centerY = 0)
@@ -86,6 +137,50 @@ namespace Stuff
                 GC.Collect();
             };
             storyboard.Begin();
+        }
+        
+        private void Fire()
+        {
+            var x = GetLeftBorder();
+            var bomb = new Ellipse
+            {
+                Width = 30,
+                Height = 30,
+                Margin = new Thickness(x, 0, 0, 130),
+                Fill = new SolidColorBrush(Colors.Red),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                Transform3D = new CompositeTransform3D
+                {
+                    TranslateX = 0,
+                    TranslateY = 0,
+                    TranslateZ = -5000
+                }
+            };
+            (bomb.Transform3D as CompositeTransform3D).RotationX = 90;
+            (bomb.Transform3D as CompositeTransform3D).ScaleY = 5;
+            StarGrid.Children.Add(bomb);
+
+            var animation = new DoubleAnimation
+            {
+                To = 250,
+                Duration = TimeSpan.FromSeconds(2)
+            };
+            Storyboard.SetTarget(animation, bomb.Transform3D);
+            Storyboard.SetTargetProperty(animation, "TranslateZ");
+            var storyboard = new Storyboard();
+            storyboard.Children.Add(animation);
+            storyboard.Completed += (sender, o) =>
+            {
+                StarGrid.Children.Remove(bomb);
+                GC.Collect();
+            };
+            storyboard.Begin();
+        }
+        
+        private void Released(object sender, PointerRoutedEventArgs e)
+        {
+            Fire();
         }
     }
 }
