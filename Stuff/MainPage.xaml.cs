@@ -18,6 +18,7 @@ namespace Stuff
     /// </summary>
     public sealed partial class MainPage
     {
+        private int _hitCount = 0;
         public MainPage()
         {
             InitializeComponent();
@@ -34,15 +35,15 @@ namespace Stuff
 
         private void StartFireTimer()
         {
-            var fireTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            var fireTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
             fireTimer.Tick += (o, args) => Fire();
             fireTimer.Start();
         }
 
         private void StartGameTimer()
         {
-            var gameTimer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(2)};
-            gameTimer.Tick += (o, args) => ChangeCannons();
+            var gameTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(2) };
+            gameTimer.Tick += (o, args) => MoveStarShip();
             gameTimer.Start();
         }
 
@@ -54,28 +55,26 @@ namespace Stuff
                 CreateStar();
                 CreateStar();
                 CreateStar();
-                
+
             };
             timer.Start();
         }
 
-        private void ChangeCannons()
+        private void MoveStarShip()
         {
             var x = GetLeftBorder();
-            CannonsPanel.Margin = new Thickness(x, 0, 0, 0);
+            StarShipPanel.Margin = new Thickness(x, 0, 0, 0);
         }
 
         private double GetLeftBorder()
         {
             var position = GetMousePosition();
-            Debug.WriteLine("X: " + position.X);
             var space = Window.Current.CoreWindow.Bounds.Width - StarGrid.ActualWidth;
-            Debug.WriteLine("SPACE: " + space);
-            if (position.X < space / 2) 
+            if (position.X < space / 2)
                 return 0;
-            if (position.X > StarGrid.ActualWidth + space/2)
+            if (position.X > StarGrid.ActualWidth + space / 2)
                 return 750;
-            return position.X - (space/2);
+            return position.X - (StarShipImage.ActualWidth / 2);
         }
 
         private Point GetMousePosition()
@@ -138,7 +137,7 @@ namespace Stuff
             };
             storyboard.Begin();
         }
-        
+
         private void Fire()
         {
             var x = GetLeftBorder();
@@ -146,7 +145,7 @@ namespace Stuff
             {
                 Width = 30,
                 Height = 30,
-                Margin = new Thickness(x, 0, 0, 130),
+                Margin = new Thickness(x + 70, 0, 0, 130),
                 Fill = new SolidColorBrush(Colors.Red),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Bottom,
@@ -163,8 +162,8 @@ namespace Stuff
 
             var animation = new DoubleAnimation
             {
-                To = 250,
-                Duration = TimeSpan.FromSeconds(2)
+                To = 200,
+                Duration = TimeSpan.FromMilliseconds(1000)
             };
             Storyboard.SetTarget(animation, bomb.Transform3D);
             Storyboard.SetTargetProperty(animation, "TranslateZ");
@@ -173,11 +172,31 @@ namespace Stuff
             storyboard.Completed += (sender, o) =>
             {
                 StarGrid.Children.Remove(bomb);
+                DeterminIfShipWasHit(bomb);
+                HitCountTextBlock.Text = _hitCount.ToString();
                 GC.Collect();
             };
             storyboard.Begin();
         }
-        
+
+        private void DeterminIfShipWasHit(Ellipse bomb)
+        {
+            var left = StarShipPanel.Margin.Left;
+            if (left > bomb.Margin.Left)
+            {
+                Debug.WriteLine($"MISSED: {left}, {bomb.Margin.Left}");
+            }
+            else if (left + 180 - bomb.Margin.Left > 0)
+            {
+                _hitCount++;
+                Debug.WriteLine($"HIT: {left}, {bomb.Margin.Left}");
+            }
+            else
+            {
+                Debug.WriteLine($"MISSED: {left}, {bomb.Margin.Left}");
+            }
+        }
+
         private void Released(object sender, PointerRoutedEventArgs e)
         {
             Fire();
