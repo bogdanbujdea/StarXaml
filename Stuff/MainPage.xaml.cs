@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -15,6 +16,8 @@ namespace Stuff
     public sealed partial class MainPage
     {
         private int _hitCount;
+        private Point _lastPosition = new Point();
+
         public MainPage()
         {
             InitializeComponent();
@@ -25,8 +28,8 @@ namespace Stuff
         private void ViewLoaded(object sender, RoutedEventArgs e)
         {
             StartStarsTimer();
-            StartGameTimer();
             StartFireTimer();
+            Window.Current.CoreWindow.PointerMoved += PointerCursorMoved;
         }
 
         private void StartFireTimer()
@@ -36,11 +39,31 @@ namespace Stuff
             fireTimer.Start();
         }
 
-        private void StartGameTimer()
+        private void PointerCursorMoved(CoreWindow sender, PointerEventArgs args)
         {
-            var gameTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(2) };
-            gameTimer.Tick += (o, args) => MoveStarShip();
-            gameTimer.Start();
+            var point = new Point();
+            point.X = args.CurrentPoint.Position.X - (StarShipImage.ActualWidth / 2);
+            point.Y = args.CurrentPoint.Position.Y - (StarShipImage.ActualHeight / 2);
+
+            int rotation = 0;
+             if (_lastPosition.X < point.X)
+                rotation = -25;
+            else if (_lastPosition.X > point.X)
+                rotation = 25;
+            StarShipPanel.Transform3D = new CompositeTransform3D
+            {
+                CenterX = 0.5,
+                CenterY = 0.5,
+                RotationZ = rotation
+            };
+            _lastPosition = point;
+            MoveStarShip(point);
+        }
+
+        private void MoveStarShip(Point point)
+        {
+            Canvas.SetLeft(StarShipPanel, point.X);
+            Canvas.SetTop(StarShipPanel, point.Y);
         }
 
         private void StartStarsTimer()
@@ -56,13 +79,6 @@ namespace Stuff
             timer.Start();
         }
 
-        private void MoveStarShip()
-        {
-            var point = GetShipPosition();
-            Canvas.SetLeft(StarShipPanel, point.X);
-            Canvas.SetTop(StarShipPanel, point.Y);
-        }
-
         private Point GetShipPosition()
         {
             var position = GetMousePosition();
@@ -74,7 +90,7 @@ namespace Stuff
                 point.X = Window.Current.CoreWindow.Bounds.Width;
                 return point;
             }
-            point.X = position.X - (StarShipImage.ActualWidth/2);
+            point.X = position.X - (StarShipImage.ActualWidth / 2);
             point.Y = position.Y - (StarShipImage.ActualHeight / 2);
             return point;
         }
@@ -147,7 +163,7 @@ namespace Stuff
             {
                 Width = 10,
                 Height = 10,
-                Margin = new Thickness(point.X + 70, 0, 0, 0),                
+                Margin = new Thickness(point.X + 70, 0, 0, 0),
                 Fill = new SolidColorBrush(Colors.Crimson),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Bottom,
@@ -188,7 +204,7 @@ namespace Stuff
             {
                 Debug.WriteLine($"MISSED: {left}, {bomb.Margin.Left}");
             }
-            else if (left + 180 - bomb.Margin.Left > 0)
+            else if (left + StarShipPanel.ActualWidth - bomb.Margin.Left > 0)
             {
                 _hitCount++;
                 Debug.WriteLine($"HIT: {left}, {bomb.Margin.Left}");

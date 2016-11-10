@@ -12,8 +12,8 @@
             <media3D:PerspectiveTransform3D></media3D:PerspectiveTransform3D>
         </Grid.Transform3D>
         <Canvas>
-            <StackPanel x:Name="StarShipPanel" Orientation="Horizontal" Width="180" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                <Image x:Name="StarShipImage" Source="Assets/xwing3.png" Width="180" Height="150" Stretch="Uniform"></Image>
+            <StackPanel x:Name="StarShipPanel" Orientation="Horizontal" Width="250" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                <Image x:Name="StarShipImage" Source="Assets/xwing3.png" Width="250" Stretch="Uniform"></Image>
             </StackPanel>
         </Canvas>
         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Background="Black">
