@@ -3,22 +3,18 @@ using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Media3D;
 using Windows.UI.Xaml.Shapes;
 
-// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
 namespace Stuff
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainPage
     {
-        private int _hitCount = 0;
+        private int _hitCount;
         public MainPage()
         {
             InitializeComponent();
@@ -62,19 +58,25 @@ namespace Stuff
 
         private void MoveStarShip()
         {
-            var x = GetLeftBorder();
-            StarShipPanel.Margin = new Thickness(x, 0, 0, 0);
+            var point = GetShipPosition();
+            Canvas.SetLeft(StarShipPanel, point.X);
+            Canvas.SetTop(StarShipPanel, point.Y);
         }
 
-        private double GetLeftBorder()
+        private Point GetShipPosition()
         {
             var position = GetMousePosition();
-            var space = Window.Current.CoreWindow.Bounds.Width - StarGrid.ActualWidth;
-            if (position.X < space / 2)
-                return 0;
-            if (position.X > StarGrid.ActualWidth + space / 2)
-                return 750;
-            return position.X - (StarShipImage.ActualWidth / 2);
+            var point = new Point();
+            if (position.X < 0)
+                return point;
+            if (position.X > StarGrid.ActualWidth)
+            {
+                point.X = Window.Current.CoreWindow.Bounds.Width;
+                return point;
+            }
+            point.X = position.X - (StarShipImage.ActualWidth/2);
+            point.Y = position.Y - (StarShipImage.ActualHeight / 2);
+            return point;
         }
 
         private Point GetMousePosition()
@@ -140,24 +142,24 @@ namespace Stuff
 
         private void Fire()
         {
-            var x = GetLeftBorder();
+            var point = GetShipPosition();
             var bomb = new Ellipse
             {
-                Width = 30,
-                Height = 30,
-                Margin = new Thickness(x + 70, 0, 0, 130),
-                Fill = new SolidColorBrush(Colors.Red),
+                Width = 10,
+                Height = 10,
+                Margin = new Thickness(point.X + 70, 0, 0, 0),                
+                Fill = new SolidColorBrush(Colors.Crimson),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 Transform3D = new CompositeTransform3D
                 {
                     TranslateX = 0,
-                    TranslateY = 0,
+                    TranslateY = point.Y - Window.Current.CoreWindow.Bounds.Height,
                     TranslateZ = -5000
                 }
             };
             (bomb.Transform3D as CompositeTransform3D).RotationX = 90;
-            (bomb.Transform3D as CompositeTransform3D).ScaleY = 5;
+            (bomb.Transform3D as CompositeTransform3D).ScaleY = 30;
             StarGrid.Children.Add(bomb);
 
             var animation = new DoubleAnimation
@@ -181,7 +183,7 @@ namespace Stuff
 
         private void DeterminIfShipWasHit(Ellipse bomb)
         {
-            var left = StarShipPanel.Margin.Left;
+            var left = Canvas.GetLeft(StarShipPanel);
             if (left > bomb.Margin.Left)
             {
                 Debug.WriteLine($"MISSED: {left}, {bomb.Margin.Left}");
