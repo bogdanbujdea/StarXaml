@@ -34,7 +34,7 @@ namespace Stuff
 
         private void StartFireTimer()
         {
-            var fireTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
+            var fireTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
             fireTimer.Tick += (o, args) => Fire();
             fireTimer.Start();
         }
@@ -46,7 +46,7 @@ namespace Stuff
             point.Y = args.CurrentPoint.Position.Y - (StarShipImage.ActualHeight / 2);
 
             int rotation = 0;
-             if (_lastPosition.X < point.X)
+            if (_lastPosition.X < point.X)
                 rotation = -25;
             else if (_lastPosition.X > point.X)
                 rotation = 25;
@@ -163,14 +163,29 @@ namespace Stuff
             {
                 Width = 10,
                 Height = 10,
-                Margin = new Thickness(point.X + 70, 0, 0, 0),
-                Fill = new SolidColorBrush(Colors.Crimson),
+                Margin = new Thickness(point.X + 70, point.Y, 0, 0),
+                Fill = new LinearGradientBrush(new GradientStopCollection {
+                new GradientStop
+                {
+                    Color = Colors.Red,
+                    Offset = 0
+                },
+                new GradientStop
+                {
+                    Color = Colors.DarkOrange,
+                    Offset = 0.8
+                },
+                new GradientStop
+                {
+                    Color = Colors.Yellow,
+                    Offset = 1
+                }
+                }, 90),
                 HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Bottom,
+                VerticalAlignment = VerticalAlignment.Top,
                 Transform3D = new CompositeTransform3D
                 {
                     TranslateX = 0,
-                    TranslateY = point.Y - Window.Current.CoreWindow.Bounds.Height,
                     TranslateZ = -5000
                 }
             };
@@ -190,11 +205,24 @@ namespace Stuff
             storyboard.Completed += (sender, o) =>
             {
                 StarGrid.Children.Remove(bomb);
-                DeterminIfShipWasHit(bomb);
+                var wasHit = ShipWasHit(bomb);
+                if (wasHit)
+                    _hitCount++;
+                Debug.WriteLine("Was hit: " + wasHit);
                 HitCountTextBlock.Text = _hitCount.ToString();
                 GC.Collect();
             };
             storyboard.Begin();
+        }
+
+        private bool ShipWasHit(Ellipse bomb)
+        {
+            var shipRect = new Rect(GetShipPosition(), new Size(StarShipPanel.ActualWidth, StarShipPanel.ActualHeight));
+            var bombRect = new Rect(new Point(bomb.Margin.Left, bomb.Margin.Top), new Size(10, 10));
+            Debug.WriteLine("ship rect: " + shipRect);
+            Debug.WriteLine("bomb rect: " + bombRect);
+            shipRect.Intersect(bombRect);
+            return shipRect.IsEmpty == false;
         }
 
         private void DeterminIfShipWasHit(Ellipse bomb)
