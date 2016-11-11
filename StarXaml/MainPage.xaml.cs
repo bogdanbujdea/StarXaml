@@ -49,19 +49,28 @@ namespace StarXaml
                 Y = args.CurrentPoint.Position.Y - (StarShipImage.ActualHeight/2)
             };
 
-            int rotation = 0;
-            if (LastPosition.X < point.X)
-                rotation = -25;
-            else if (LastPosition.X > point.X)
-                rotation = 25;
-            StarShipPanel.Transform3D = new CompositeTransform3D
+            /*int rotation = 0;
+            if (Math.Abs(LastPosition.X - point.X) > 10)
             {
-                CenterX = 0.5,
-                CenterY = 0.5,
-                RotationZ = rotation
-            };
+                if (LastPosition.X < point.X)
+                    rotation = -25;
+                else if (LastPosition.X > point.X)
+                    rotation = 25;
+                StarShipPanel.Transform3D = new CompositeTransform3D
+                {
+                    CenterX = 0.5,
+                    CenterY = 0.5,
+                    RotationZ = rotation
+                };
+            }
+           */
             LastPosition = point;
             MoveStarShip(point);
+        }
+
+        private void Released(object sender, PointerRoutedEventArgs e)
+        {
+            Fire();
         }
 
         private void MoveStarShip(Point point)
@@ -78,34 +87,11 @@ namespace StarXaml
                 CreateStar();
                 CreateStar();
                 CreateStar();
-
+                CreateFighter();
             };
             timer.Start();
         }
-
-        private Point GetShipPosition()
-        {
-            var position = GetMousePosition();
-            var point = new Point();
-            if (position.X < 0)
-                return point;
-            if (position.X > StarGrid.ActualWidth)
-            {
-                point.X = Window.Current.CoreWindow.Bounds.Width;
-                return point;
-            }
-            point.X = position.X - (StarShipImage.ActualWidth / 2);
-            point.Y = position.Y - (StarShipImage.ActualHeight / 2);
-            return point;
-        }
-
-        private Point GetMousePosition()
-        {
-            Rect bounds = Window.Current.CoreWindow.Bounds;
-            var point = Window.Current.CoreWindow.PointerPosition;
-            return new Point(point.X - bounds.X, point.Y - bounds.Y);
-        }
-
+        
         bool Inside(double x, double y, double radius, double centerX = 0, double centerY = 0)
         {
             return Math.Pow(x - centerX, 2) + Math.Pow(y - centerY, 2) < Math.Pow(radius, 2);
@@ -164,6 +150,47 @@ namespace StarXaml
             storyboard.Begin();
         }
 
+        private void CreateFighter()
+        {
+            var range = 2000;
+            var x = random.Next(-range, range);
+            var y = random.Next(-range, range);
+            while (Inside(x, y, 500))
+            {
+                x = random.Next(-range, range);
+                y = random.Next(-range, range);
+            }
+            var fighter = new Image
+            {
+                Height = 100,
+                Stretch = Stretch.Uniform,
+                Transform3D = new CompositeTransform3D
+                {
+                    TranslateX = x,
+                    TranslateY = y,
+                    TranslateZ = -3000
+                }
+            };
+            StarGrid.Children.Add(fighter);
+            var duration = TimeSpan.FromSeconds(4);
+
+            var animation = new DoubleAnimation
+            {
+                To = 250,
+                Duration = duration
+            };
+            Storyboard.SetTarget(animation, fighter.Transform3D);
+            Storyboard.SetTargetProperty(animation, "TranslateZ");
+            var storyboard = new Storyboard();
+            storyboard.Children.Add(animation);
+            storyboard.Completed += (sender, o) =>
+            {
+                StarGrid.Children.Remove(fighter);
+                GC.Collect();
+            };
+            storyboard.Begin();
+        }
+
         private void Fire()
         {
             var point = GetShipPosition();
@@ -171,7 +198,7 @@ namespace StarXaml
             {
                 Width = 10,
                 Height = 10,
-                Margin = new Thickness(point.X + 70, point.Y, 0, 0),
+                Margin = new Thickness(point.X + StarShipImage.ActualWidth/2, point.Y, 0, 0),
                 Fill = new LinearGradientBrush(new GradientStopCollection {
                 new GradientStop
                 {
@@ -203,13 +230,13 @@ namespace StarXaml
 
             var animation = new DoubleAnimation
             {
-                To = 200,
+                To = 350,
                 Duration = TimeSpan.FromMilliseconds(1000)
             };
             Storyboard.SetTarget(animation, bomb.Transform3D);
             Storyboard.SetTargetProperty(animation, "TranslateZ");
             var storyboard = new Storyboard();
-            storyboard.Children.Add(animation);
+            storyboard.Children.Add(animation);            
             storyboard.Completed += (sender, o) =>
             {
                 StarGrid.Children.Remove(bomb);
@@ -223,6 +250,31 @@ namespace StarXaml
             storyboard.Begin();
         }
 
+        #region Helpers
+
+        private Point GetShipPosition()
+        {
+            var position = GetMousePosition();
+            var point = new Point();
+            if (position.X < 0)
+                return point;
+            if (position.X > StarGrid.ActualWidth)
+            {
+                point.X = Window.Current.CoreWindow.Bounds.Width;
+                return point;
+            }
+            point.X = position.X - (StarShipImage.ActualWidth / 2);
+            point.Y = position.Y - (StarShipImage.ActualHeight / 2);
+            return point;
+        }
+
+        private Point GetMousePosition()
+        {
+            Rect bounds = Window.Current.CoreWindow.Bounds;
+            var point = Window.Current.CoreWindow.PointerPosition;
+            return new Point(point.X - bounds.X, point.Y - bounds.Y);
+        }
+
         private bool ShipWasHit(Ellipse bomb)
         {
             var shipRect = new Rect(GetShipPosition(), new Size(StarShipPanel.ActualWidth, StarShipPanel.ActualHeight));
@@ -233,9 +285,6 @@ namespace StarXaml
             return shipRect.IsEmpty == false;
         }
 
-        private void Released(object sender, PointerRoutedEventArgs e)
-        {
-            Fire();
-        }
+        #endregion
     }
 }
