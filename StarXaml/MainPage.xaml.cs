@@ -16,7 +16,6 @@ namespace StarXaml
     public sealed partial class MainPage
     {
         private int _hitCount;
-        private Point _lastPosition = new Point();
 
         public MainPage()
         {
@@ -24,7 +23,10 @@ namespace StarXaml
             Loaded += ViewLoaded;
         }
 
-        Random random = new Random((int)DateTime.Now.Ticks);
+        readonly Random random = new Random((int)DateTime.Now.Ticks);
+
+        private Point LastPosition { get; set; }
+
         private void ViewLoaded(object sender, RoutedEventArgs e)
         {
             StartStarsTimer();
@@ -41,14 +43,16 @@ namespace StarXaml
 
         private void PointerCursorMoved(CoreWindow sender, PointerEventArgs args)
         {
-            var point = new Point();
-            point.X = args.CurrentPoint.Position.X - (StarShipImage.ActualWidth / 2);
-            point.Y = args.CurrentPoint.Position.Y - (StarShipImage.ActualHeight / 2);
+            var point = new Point
+            {
+                X = args.CurrentPoint.Position.X - (StarShipImage.ActualWidth/2),
+                Y = args.CurrentPoint.Position.Y - (StarShipImage.ActualHeight/2)
+            };
 
             int rotation = 0;
-            if (_lastPosition.X < point.X)
+            if (LastPosition.X < point.X)
                 rotation = -25;
-            else if (_lastPosition.X > point.X)
+            else if (LastPosition.X > point.X)
                 rotation = 25;
             StarShipPanel.Transform3D = new CompositeTransform3D
             {
@@ -56,7 +60,7 @@ namespace StarXaml
                 CenterY = 0.5,
                 RotationZ = rotation
             };
-            _lastPosition = point;
+            LastPosition = point;
             MoveStarShip(point);
         }
 
@@ -134,8 +138,12 @@ namespace StarXaml
             if (Inside(x, y, 1000))
             {
                 star.Opacity = 0.5;
-                (star.Transform3D as CompositeTransform3D).RotationX = 90;
-                (star.Transform3D as CompositeTransform3D).ScaleY = 50;
+                var compositeTransform3D = (star.Transform3D as CompositeTransform3D);
+                if (compositeTransform3D != null)
+                {
+                    compositeTransform3D.RotationX = 90;
+                    compositeTransform3D.ScaleY = 50;
+                }
                 duration = TimeSpan.FromSeconds(2);
             }
 
@@ -223,24 +231,6 @@ namespace StarXaml
             Debug.WriteLine("bomb rect: " + bombRect);
             shipRect.Intersect(bombRect);
             return shipRect.IsEmpty == false;
-        }
-
-        private void DeterminIfShipWasHit(Ellipse bomb)
-        {
-            var left = Canvas.GetLeft(StarShipPanel);
-            if (left > bomb.Margin.Left)
-            {
-                Debug.WriteLine($"MISSED: {left}, {bomb.Margin.Left}");
-            }
-            else if (left + StarShipPanel.ActualWidth - bomb.Margin.Left > 0)
-            {
-                _hitCount++;
-                Debug.WriteLine($"HIT: {left}, {bomb.Margin.Left}");
-            }
-            else
-            {
-                Debug.WriteLine($"MISSED: {left}, {bomb.Margin.Left}");
-            }
         }
 
         private void Released(object sender, PointerRoutedEventArgs e)
