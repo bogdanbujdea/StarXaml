@@ -11,7 +11,7 @@ using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Media3D;
 using Windows.UI.Xaml.Shapes;
 
-namespace Stuff
+namespace StarXaml
 {
     public sealed partial class MainPage
     {

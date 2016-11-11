@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stuff", "Stuff\Stuff.csproj", "{7E012918-21B9-41E5-8317-4A33A0C6854B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarXaml", "StarXaml\StarXaml.csproj", "{7E012918-21B9-41E5-8317-4A33A0C6854B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +36,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(CodealikeProperties) = postSolution
+		SolutionGuid = 7bc4ed6e-6228-4dad-97ff-5084d5517c6f
 	EndGlobalSection
 EndGlobal
