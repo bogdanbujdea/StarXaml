@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Media.Media3D;
 using Windows.UI.Xaml.Shapes;
 
@@ -36,9 +37,13 @@ namespace StarXaml
 
         private void StartFireTimer()
         {
-            var fireTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-            fireTimer.Tick += (o, args) => Fire();
-            fireTimer.Start();
+            var fireTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
+            /*fireTimer.Tick += (o, args) => CreateFighter();
+            fireTimer.Start();*/
+            for (int i = 0; i < 10; i++)
+            {
+                CreateFighter();
+            }
         }
 
         private void PointerCursorMoved(CoreWindow sender, PointerEventArgs args)
@@ -87,7 +92,6 @@ namespace StarXaml
                 CreateStar();
                 CreateStar();
                 CreateStar();
-                CreateFighter();
             };
             timer.Start();
         }
@@ -162,21 +166,22 @@ namespace StarXaml
             }
             var fighter = new Image
             {
-                Height = 100,
+                Height = 150,
                 Stretch = Stretch.Uniform,
+                Source = new BitmapImage(new Uri("ms-appx:///Assets/fighter.png")),
                 Transform3D = new CompositeTransform3D
                 {
                     TranslateX = x,
                     TranslateY = y,
-                    TranslateZ = -3000
+                    TranslateZ = -5000
                 }
             };
             StarGrid.Children.Add(fighter);
-            var duration = TimeSpan.FromSeconds(4);
+            var duration = TimeSpan.FromSeconds(2);
 
             var animation = new DoubleAnimation
             {
-                To = 250,
+                To = -2500,
                 Duration = duration
             };
             Storyboard.SetTarget(animation, fighter.Transform3D);
@@ -185,7 +190,7 @@ namespace StarXaml
             storyboard.Children.Add(animation);
             storyboard.Completed += (sender, o) =>
             {
-                StarGrid.Children.Remove(fighter);
+                //StarGrid.Children.Remove(fighter);
                 GC.Collect();
             };
             storyboard.Begin();

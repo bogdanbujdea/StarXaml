@@ -107,6 +107,9 @@
     <None Include="StarXaml_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\fighter.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\xwing.png" />
     <Content Include="Assets\xwing2.png" />
     <Content Include="Assets\xwing3.png" />
