@@ -13,8 +13,9 @@
         </Grid.Transform3D>
         <Canvas>
             <StackPanel x:Name="StarShipPanel" Orientation="Horizontal" Width="250" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                <Image x:Name="StarShipImage" Source="Assets/xwing3.png" Width="250" Stretch="Uniform"></Image>
+                <Image x:Name="LockImage" Source="Assets/target.png" Width="120" Stretch="Uniform"></Image>
             </StackPanel>
+            <Image x:Name="StarShipImage" Source="Assets/xwing3.png" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="250" Stretch="Uniform"></Image>
         </Canvas>
         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Background="Black">
             <StackPanel Orientation="Horizontal" Margin="20 10">

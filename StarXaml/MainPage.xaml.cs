@@ -50,8 +50,8 @@ namespace StarXaml
         {
             var point = new Point
             {
-                X = args.CurrentPoint.Position.X - (StarShipImage.ActualWidth/2),
-                Y = args.CurrentPoint.Position.Y - (StarShipImage.ActualHeight/2)
+                X = args.CurrentPoint.Position.X - (LockImage.ActualWidth/2),
+                Y = args.CurrentPoint.Position.Y - (LockImage.ActualHeight)
             };
 
             /*int rotation = 0;
@@ -70,7 +70,7 @@ namespace StarXaml
             }
            */
             LastPosition = point;
-            MoveStarShip(point);
+            MoveTarget(point);
         }
 
         private void Released(object sender, PointerRoutedEventArgs e)
@@ -78,7 +78,7 @@ namespace StarXaml
             Fire();
         }
 
-        private void MoveStarShip(Point point)
+        private void MoveTarget(Point point)
         {
             Canvas.SetLeft(StarShipPanel, point.X);
             Canvas.SetTop(StarShipPanel, point.Y);
@@ -226,7 +226,7 @@ namespace StarXaml
                 Transform3D = new CompositeTransform3D
                 {
                     TranslateX = 0,
-                    TranslateZ = -5000
+                    TranslateZ = 0
                 }
             };
             (bomb.Transform3D as CompositeTransform3D).RotationX = 90;
@@ -235,8 +235,8 @@ namespace StarXaml
 
             var animation = new DoubleAnimation
             {
-                To = 350,
-                Duration = TimeSpan.FromMilliseconds(1000)
+                To = -2500,
+                Duration = TimeSpan.FromMilliseconds(150)
             };
             Storyboard.SetTarget(animation, bomb.Transform3D);
             Storyboard.SetTargetProperty(animation, "TranslateZ");
